@@ -1,4 +1,4 @@
-package com.example.examplemod.mixin;
+package tfar.ps1worldselectscreen.mixin;
 
 import net.minecraft.client.gui.screens.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;

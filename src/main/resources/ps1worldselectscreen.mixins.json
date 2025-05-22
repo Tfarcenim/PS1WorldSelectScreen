@@ -1,12 +1,11 @@
 {
   "required": true,
-  "package": "com.example.examplemod.mixin",
+  "package": "tfar.ps1worldselectscreen.mixin",
   "compatibilityLevel": "JAVA_16",
-  "refmap": "examplemod.refmap.json",
+  "refmap": "ps1worldselectscreen.refmap.json",
   "mixins": [
   ],
   "client":[
-    "ExampleMixin"
   ],
   "injectors": {
     "defaultRequire": 1
