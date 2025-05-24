@@ -24,7 +24,7 @@ public class CustomSelectWorldScreen extends Screen {
     private Button renameButton;
     private Button copyButton;
     protected EditBox searchBox;
-    private TwoColumnSelectionList list;
+    TwoColumnSelectionList list;
 
     public CustomSelectWorldScreen(Screen pLastScreen) {
         super(new TranslatableComponent("selectWorld.title"));

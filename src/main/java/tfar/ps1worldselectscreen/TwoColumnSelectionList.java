@@ -200,9 +200,9 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
             }
 
             Component component = this.summary.getInfo();
-            this.minecraft.font.draw(pPoseStack, s, (float)(pLeft + 32 + 3), (float)(pTop + 1), 16777215);
-            this.minecraft.font.draw(pPoseStack, s1, (float)(pLeft + 32 + 3), (float)(pTop + 9 + 3), 8421504);
-            this.minecraft.font.draw(pPoseStack, component, (float)(pLeft + 32 + 3), (float)(pTop + 9 + 9 + 3), 8421504);
+            this.minecraft.font.draw(pPoseStack, s, (float)(pLeft + 32 + 3), (float)(pTop + 1), 0xffffff);
+            this.minecraft.font.draw(pPoseStack, s1, (float)(pLeft + 32 + 3), (float)(pTop + 9 + 3), 0x808080);
+            this.minecraft.font.draw(pPoseStack, component, (float)(pLeft + 32 + 3), (float)(pTop + 9 + 9 + 3), 0x808080);
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShaderTexture(0, this.icon != null ? this.iconLocation : TwoColumnSelectionList.ICON_MISSING);
@@ -212,7 +212,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
             renderExperimentalWarning(pPoseStack, pMouseX, pMouseY, pTop, pLeft);
             if (this.minecraft.options.touchscreen || pIsMouseOver) {
                 RenderSystem.setShaderTexture(0, TwoColumnSelectionList.ICON_OVERLAY_LOCATION);
-                GuiComponent.fill(pPoseStack, pLeft, pTop, pLeft + 32, pTop + 32, -1601138544);
+                GuiComponent.fill(pPoseStack, pLeft, pTop, pLeft + 32, pTop + 32, 0xa0909090);
                 RenderSystem.setShader(GameRenderer::getPositionTexShader);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                 int i = pMouseX - pLeft;
@@ -255,10 +255,13 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
                 TwoColumnSelectionList.this.setSelected(this);
                 this.screen.updateButtonStatus(TwoColumnSelectionList.this.getSelectedOpt().isPresent());
                 if (pMouseX - (double)TwoColumnSelectionList.this.getRowLeft() <= 32.0D) {
-                    this.joinWorld();
+                    //this.joinWorld();
+                    minecraft.setScreen(new SubWorldScreen(new TextComponent(summary.getLevelName()),this.screen,summary,this));
+
                     return true;
                 } else if (Util.getMillis() - this.lastClickTime < 250L) {
-                    this.joinWorld();
+                    //this.joinWorld();
+                    minecraft.setScreen(new SubWorldScreen(new TextComponent(summary.getLevelName()),this.screen,summary,this));
                     return true;
                 } else {
                     this.lastClickTime = Util.getMillis();
@@ -284,14 +287,14 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
                             String s2 = this.summary.getLevelId();
 
                             try {
-                                LevelStorageSource.LevelStorageAccess levelstoragesource$levelstorageaccess = this.minecraft.getLevelSource().createAccess(s2);
+                                LevelStorageSource.LevelStorageAccess levelStorageAccess = this.minecraft.getLevelSource().createAccess(s2);
 
                                 try {
-                                    EditWorldScreen.makeBackupAndShowToast(levelstoragesource$levelstorageaccess);
+                                    EditWorldScreen.makeBackupAndShowToast(levelStorageAccess);
                                 } catch (Throwable throwable1) {
-                                    if (levelstoragesource$levelstorageaccess != null) {
+                                    if (levelStorageAccess != null) {
                                         try {
-                                            levelstoragesource$levelstorageaccess.close();
+                                            levelStorageAccess.close();
                                         } catch (Throwable throwable) {
                                             throwable1.addSuppressed(throwable);
                                         }
@@ -300,8 +303,8 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
                                     throw throwable1;
                                 }
 
-                                if (levelstoragesource$levelstorageaccess != null) {
-                                    levelstoragesource$levelstorageaccess.close();
+                                if (levelStorageAccess != null) {
+                                    levelStorageAccess.close();
                                 }
                             } catch (IOException ioexception) {
                                 SystemToast.onWorldAccessFailure(this.minecraft, s2);

@@ -9,6 +9,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -17,11 +18,12 @@ public class PS1WorldSelectScreen
 {
     public static final String MOD_ID = "ps1worldselectscreen";
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    static final Logger LOGGER = LogUtils.getLogger();
 
     public PS1WorldSelectScreen() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addListener(this::setup);
+        bus.addListener(this::gather);
         MinecraftForge.EVENT_BUS.addListener(this::screenOpen);
     }
 
@@ -33,5 +35,9 @@ public class PS1WorldSelectScreen
     }
 
     private void setup(final FMLCommonSetupEvent event) {
+    }
+
+    private void gather(GatherDataEvent event) {
+
     }
 }
