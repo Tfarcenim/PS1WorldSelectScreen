@@ -26,9 +26,12 @@ public class CustomSelectWorldScreen extends Screen {
     protected EditBox searchBox;
     TwoColumnSelectionList list;
 
+    boolean shouldHideBars;
+
     public CustomSelectWorldScreen(Screen pLastScreen) {
         super(new TranslatableComponent("selectWorld.title"));
         this.lastScreen = pLastScreen;
+        shouldHideBars = PS1WorldSelectScreen.CLIENT.hideBottomBar.get();
     }
 
     public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
@@ -47,35 +50,39 @@ public class CustomSelectWorldScreen extends Screen {
                 return p_101362_;
             }, false);
         });
-        this.list = new TwoColumnSelectionList(this, this.minecraft, this.width, this.height, 48, this.height - 64, 36, () -> {
+        this.list = new TwoColumnSelectionList(this, this.minecraft, this.width, this.height, shouldHideBars ? 20 :48, this.height - (shouldHideBars ? 0 :64), 72, () -> {
             return this.searchBox.getValue();
         }, this.list);
-        this.addWidget(this.searchBox);
+        if (!shouldHideBars) {
+            this.addWidget(this.searchBox);
+        }
         this.addWidget(this.list);
-        this.selectButton = this.addRenderableWidget(new Button(this.width / 2 - 154, this.height - 52, 150, 20, new TranslatableComponent("selectWorld.select"), (p_101378_) -> {
-            this.list.getSelectedOpt().ifPresent(TwoColumnSelectionList.WorldListEntry::joinWorld);
-        }));
-        this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 52, 150, 20, new TranslatableComponent("selectWorld.create"), (p_101376_) -> {
-            this.minecraft.setScreen(CreateWorldScreen.createFresh(this));
-        }));
-        this.renameButton = this.addRenderableWidget(new Button(this.width / 2 - 154, this.height - 28, 72, 20, new TranslatableComponent("selectWorld.edit"), (p_101373_) -> {
-            this.list.getSelectedOpt().ifPresent(TwoColumnSelectionList.WorldListEntry::editWorld);
-        }));
-        this.deleteButton = this.addRenderableWidget(new Button(this.width / 2 - 76, this.height - 28, 72, 20, new TranslatableComponent("selectWorld.delete"), (p_101366_) -> {
-            this.list.getSelectedOpt().ifPresent(TwoColumnSelectionList.WorldListEntry::deleteWorld);
-        }));
-        this.copyButton = this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 28, 72, 20, new TranslatableComponent("selectWorld.recreate"), (p_101360_) -> {
-            this.list.getSelectedOpt().ifPresent(TwoColumnSelectionList.WorldListEntry::recreateWorld);
-        }));
-        this.addRenderableWidget(new Button(this.width / 2 + 82, this.height - 28, 72, 20, CommonComponents.GUI_CANCEL, (p_101356_) -> {
-            this.minecraft.setScreen(this.lastScreen);
-        }));
+        if (!shouldHideBars) {
+            this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 52, 150, 20, new TranslatableComponent("selectWorld.create"), (p_101376_) -> {
+                this.minecraft.setScreen(CreateWorldScreen.createFresh(this));
+            }));
+            this.renameButton = this.addRenderableWidget(new Button(this.width / 2 - 154, this.height - 28, 72, 20, new TranslatableComponent("selectWorld.edit"), (p_101373_) -> {
+                this.list.getSelectedOpt().ifPresent(TwoColumnSelectionList.WorldListEntry::editWorld);
+            }));
+            this.deleteButton = this.addRenderableWidget(new Button(this.width / 2 - 76, this.height - 28, 72, 20, new TranslatableComponent("selectWorld.delete"), (p_101366_) -> {
+                this.list.getSelectedOpt().ifPresent(TwoColumnSelectionList.WorldListEntry::deleteWorld);
+            }));
+            this.copyButton = this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 28, 72, 20, new TranslatableComponent("selectWorld.recreate"), (p_101360_) -> {
+                this.list.getSelectedOpt().ifPresent(TwoColumnSelectionList.WorldListEntry::recreateWorld);
+            }));
+        }
+      //  this.addRenderableWidget(new Button(this.width / 2 + 82, this.height - 28, 72, 20, CommonComponents.GUI_CANCEL, (p_101356_) -> {
+      //      this.minecraft.setScreen(this.lastScreen);
+      //  }));
+
         this.updateButtonStatus(false);
-        this.setInitialFocus(this.searchBox);
+        if (!shouldHideBars) {
+            this.setInitialFocus(this.searchBox);
+        }
     }
 
     public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-        return super.keyPressed(pKeyCode, pScanCode, pModifiers) ? true : this.searchBox.keyPressed(pKeyCode, pScanCode, pModifiers);
+        return super.keyPressed(pKeyCode, pScanCode, pModifiers) || this.searchBox.keyPressed(pKeyCode, pScanCode, pModifiers);
     }
 
     public void onClose() {
@@ -89,7 +96,9 @@ public class CustomSelectWorldScreen extends Screen {
     public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
         this.toolTip = null;
         this.list.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
-        this.searchBox.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        if (!shouldHideBars) {
+            this.searchBox.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        }
         drawCenteredString(pPoseStack, this.font, this.title, this.width / 2, 8, 16777215);
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         if (this.toolTip != null) {
@@ -103,10 +112,12 @@ public class CustomSelectWorldScreen extends Screen {
     }
 
     public void updateButtonStatus(boolean pActive) {
-        this.selectButton.active = pActive;
-        this.deleteButton.active = pActive;
-        this.renameButton.active = pActive;
-        this.copyButton.active = pActive;
+        if (!PS1WorldSelectScreen.CLIENT.hideBottomBar.get()) {
+            this.selectButton.active = pActive;
+            this.deleteButton.active = pActive;
+            this.renameButton.active = pActive;
+            this.copyButton.active = pActive;
+        }
     }
 
     public void removed() {

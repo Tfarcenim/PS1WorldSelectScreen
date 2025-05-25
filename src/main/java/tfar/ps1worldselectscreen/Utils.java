@@ -7,12 +7,19 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.LevelSummary;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
 public class Utils {
+
+    public static File getPreviewFile(LevelSummary summary) {
+        String s1 = summary.getIcon().getPath();
+        return new File(s1.replace("icon","preview"));
+    }
 
     public static Optional<Path> getPreviewFile(LevelStorageSource.LevelStorageAccess access) {
         return !access.lock.isValid() ? Optional.empty() : Optional.of(access.getWorldDir().resolve("preview.png"));

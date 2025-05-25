@@ -3,24 +3,54 @@ package tfar.ps1worldselectscreen;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
+import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.event.ScreenOpenEvent;
+import net.minecraftforge.common.ForgeConfig;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
+import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(PS1WorldSelectScreen.MOD_ID)
-public class PS1WorldSelectScreen
-{
+public class PS1WorldSelectScreen {
     public static final String MOD_ID = "ps1worldselectscreen";
     // Directly reference a slf4j logger
     static final Logger LOGGER = LogUtils.getLogger();
 
+    static final ForgeConfigSpec CLIENT_SPEC;
+    public static final Client CLIENT;
+
+    public static final String FOLDER = "restarts";
+
+    static {
+        final Pair<Client, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Client::new);
+        CLIENT_SPEC= specPair.getRight();
+        CLIENT = specPair.getLeft();
+    }
+
+    public static class Client {
+
+        public final ForgeConfigSpec.BooleanValue hideBottomBar;
+
+        Client(ForgeConfigSpec.Builder builder) {
+            builder.push("general");
+            hideBottomBar = builder.define("hide_bottom_bar",true);
+            builder.pop();
+        }
+    }
+
     public PS1WorldSelectScreen() {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC);
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addListener(this::setup);
         bus.addListener(this::gather);
@@ -28,8 +58,11 @@ public class PS1WorldSelectScreen
     }
 
     void screenOpen(ScreenOpenEvent event) {
+
+        boolean replace = true;
+
         Screen screen = event.getScreen();
-        if (screen instanceof SelectWorldScreen selectWorldScreen) {
+        if (replace && screen instanceof SelectWorldScreen selectWorldScreen) {
             event.setScreen(new CustomSelectWorldScreen(selectWorldScreen.lastScreen));
         }
     }
@@ -38,6 +71,21 @@ public class PS1WorldSelectScreen
     }
 
     private void gather(GatherDataEvent event) {
+        DataGenerator generator = event.getGenerator();
+        generator.addProvider(new ModLangProvider(generator));
+    }
 
+    static class ModLangProvider extends LanguageProvider {
+
+        public ModLangProvider(DataGenerator gen) {
+            super(gen, MOD_ID, "en_us");
+        }
+
+        @Override
+        protected void addTranslations() {
+            add("restartWorld.confirm.title","Confirm Restart");
+            add("restartWorld.confirm.description","This will restore the world from a backup and delete all current progress");
+            add("selectWorld.restart","Restart");
+        }
     }
 }
