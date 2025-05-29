@@ -5,7 +5,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.event.ScreenOpenEvent;
-import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.data.LanguageProvider;
@@ -17,7 +16,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 import org.apache.commons.lang3.tuple.Pair;
-import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -40,11 +38,14 @@ public class PS1WorldSelectScreen {
 
     public static class Client {
 
-        public final ForgeConfigSpec.BooleanValue hideBottomBar;
+        public final ForgeConfigSpec.BooleanValue regular_world_menu;
+        public final ForgeConfigSpec.BooleanValue refresh_preview_image;
 
         Client(ForgeConfigSpec.Builder builder) {
             builder.push("general");
-            hideBottomBar = builder.define("hide_bottom_bar",true);
+            regular_world_menu = builder.define("regular_world_menu",false);
+            refresh_preview_image = builder.define("refresh_preview_image",true);
+
             builder.pop();
         }
     }
@@ -58,11 +59,8 @@ public class PS1WorldSelectScreen {
     }
 
     void screenOpen(ScreenOpenEvent event) {
-
-        boolean replace = true;
-
         Screen screen = event.getScreen();
-        if (replace && screen instanceof SelectWorldScreen selectWorldScreen) {
+        if (!CLIENT.regular_world_menu.get() && screen instanceof SelectWorldScreen selectWorldScreen) {
             event.setScreen(new CustomSelectWorldScreen(selectWorldScreen.lastScreen));
         }
     }

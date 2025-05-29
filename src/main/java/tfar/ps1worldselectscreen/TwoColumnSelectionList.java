@@ -134,7 +134,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
 
     public void setSelected(@Nullable TwoColumnSelectionList.WorldListEntry pEntry) {
         super.setSelected(pEntry);
-        this.screen.updateButtonStatus(pEntry != null && !pEntry.summary0.isDisabled());
+     //   this.screen.updateButtonStatus(pEntry != null && !pEntry.summary0.isDisabled());
     }
 
     protected void moveSelection(AbstractSelectionList.SelectionDirection pOrdering) {
@@ -253,7 +253,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
             RenderSystem.enableBlend();
             GuiComponent.blit(pPoseStack, pLeft, pTop, 0.0F, 0.0F, 64, 64, 64, 64);
             RenderSystem.disableBlend();
-            renderExperimentalWarning(pPoseStack, pMouseX, pMouseY, pTop, pLeft);
+            renderExperimentalWarning(pPoseStack, pMouseX, pMouseY, pTop, pLeft,summary);
            /* if (this.minecraft.options.touchscreen || pIsMouseOver) {
                 RenderSystem.setShaderTexture(0, TwoColumnSelectionList.ICON_OVERLAY_LOCATION);
                 GuiComponent.fill(pPoseStack, pLeft, pTop, pLeft + 32, pTop + 32, 0xa0909090);
@@ -495,11 +495,11 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
         public String getLevelName() {
             return this.summary0.getLevelName();
         }
-        private void renderExperimentalWarning(PoseStack stack, int mouseX, int mouseY, int top, int left) {
-            if (this.summary0.isExperimental()) {
-                int leftStart = left + TwoColumnSelectionList.this.getRowWidth();
+        private void renderExperimentalWarning(PoseStack stack, int mouseX, int mouseY, int top, int left, LevelSummary summary) {
+            if (summary.isExperimental()) {
+                int leftStart = left +100;
                 RenderSystem.setShaderTexture(0, TwoColumnSelectionList.FORGE_EXPERIMENTAL_WARNING_ICON);
-                GuiComponent.blit(stack, leftStart - 36, top, 0.0F, 0.0F, 32, 32, 32, 32);
+                GuiComponent.blit(stack, leftStart - 36, top+8, 0.0F, 0.0F, 32, 32, 32, 32);
                 //Reset texture to what it was before
                 RenderSystem.setShaderTexture(0, this.icon0 != null ? this.iconLocation0 : TwoColumnSelectionList.ICON_MISSING);
                 if (TwoColumnSelectionList.this.getEntryAtPosition(mouseX, mouseY) == this && mouseX > leftStart - 36 && mouseX < leftStart) {
