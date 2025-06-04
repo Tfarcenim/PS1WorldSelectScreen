@@ -36,10 +36,7 @@ import net.minecraft.client.gui.screens.worldselection.EditWorldScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.WorldStem;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
@@ -47,8 +44,6 @@ import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageException;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -58,12 +53,12 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
     static final ResourceLocation ICON_MISSING = new ResourceLocation("textures/misc/unknown_server.png");
     static final ResourceLocation ICON_OVERLAY_LOCATION = new ResourceLocation("textures/gui/world_selection.png");
     private static final ResourceLocation FORGE_EXPERIMENTAL_WARNING_ICON = new ResourceLocation("forge","textures/gui/experimental_warning.png");
-    static final Component FROM_NEWER_TOOLTIP_1 = (new TranslatableComponent("selectWorld.tooltip.fromNewerVersion1")).withStyle(ChatFormatting.RED);
-    static final Component FROM_NEWER_TOOLTIP_2 = (new TranslatableComponent("selectWorld.tooltip.fromNewerVersion2")).withStyle(ChatFormatting.RED);
-    static final Component SNAPSHOT_TOOLTIP_1 = (new TranslatableComponent("selectWorld.tooltip.snapshot1")).withStyle(ChatFormatting.GOLD);
-    static final Component SNAPSHOT_TOOLTIP_2 = (new TranslatableComponent("selectWorld.tooltip.snapshot2")).withStyle(ChatFormatting.GOLD);
-    static final Component WORLD_LOCKED_TOOLTIP = (new TranslatableComponent("selectWorld.locked")).withStyle(ChatFormatting.RED);
-    static final Component WORLD_REQUIRES_CONVERSION = (new TranslatableComponent("selectWorld.conversion.tooltip")).withStyle(ChatFormatting.RED);
+    static final Component FROM_NEWER_TOOLTIP_1 = new TranslatableComponent("selectWorld.tooltip.fromNewerVersion1").withStyle(ChatFormatting.RED);
+    static final Component FROM_NEWER_TOOLTIP_2 = new TranslatableComponent("selectWorld.tooltip.fromNewerVersion2").withStyle(ChatFormatting.RED);
+    static final Component SNAPSHOT_TOOLTIP_1 = new TranslatableComponent("selectWorld.tooltip.snapshot1").withStyle(ChatFormatting.GOLD);
+    static final Component SNAPSHOT_TOOLTIP_2 = new TranslatableComponent("selectWorld.tooltip.snapshot2").withStyle(ChatFormatting.GOLD);
+    static final Component WORLD_LOCKED_TOOLTIP = new TranslatableComponent("selectWorld.locked").withStyle(ChatFormatting.RED);
+    static final Component WORLD_REQUIRES_CONVERSION = new TranslatableComponent("selectWorld.conversion.tooltip").withStyle(ChatFormatting.RED);
     private final CustomSelectWorldScreen screen;
     @Nullable
     private List<LevelSummary> cachedList;
@@ -111,7 +106,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
                 int index = r * columns;
                 LevelSummary levelsummary = list.get(index);
 
-                LevelSummary levelSummary1 = (index + 1) < list.size() ? list.get(index + 1) : null;
+                LevelSummary levelSummary1 = index + 1 < list.size() ? list.get(index + 1) : null;
 
                 if (levelsummary.getLevelName().toLowerCase(Locale.ROOT).contains(s) || levelsummary.getLevelId().toLowerCase(Locale.ROOT).contains(s)) {
                     this.addEntry(new WorldListEntry(this, levelsummary, levelSummary1));
@@ -121,7 +116,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
     }
 
     protected int getScrollbarPosition() {
-        return super.getScrollbarPosition() + 20;
+        return width-5;
     }
 
     public int getRowWidth() {
@@ -138,7 +133,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
     }
 
     protected void moveSelection(AbstractSelectionList.SelectionDirection pOrdering) {
-        this.moveSelection(pOrdering, (p_101681_) -> {
+        this.moveSelection(pOrdering, p_101681_ -> {
             return !p_101681_.summary0.isDisabled();
         });
     }
@@ -151,7 +146,6 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
         return this.screen;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public final class WorldListEntry extends ObjectSelectionList.Entry<TwoColumnSelectionList.WorldListEntry> implements AutoCloseable {
         private static final int ICON_WIDTH = 32;
         private static final int ICON_HEIGHT = 32;
@@ -244,7 +238,19 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
             }
 
             //   Component component = this.summary0.getInfo();
-            this.minecraft.font.draw(pPoseStack, s, (float)(pLeft + 64 + 3), (float)(pTop + 1), 0xffffff);
+
+            Component c = new TextComponent(s);
+
+
+
+
+            List<FormattedText> formattedText = Utils.findOptimalLines(c, 100);
+
+            for (int i = 0; i < formattedText.size(); i++) {
+                FormattedText text = formattedText.get(i);
+                this.minecraft.font.draw(pPoseStack, text.getString(), pLeft + 64 + 3, pTop + 1 + i * minecraft.font.lineHeight, 0xffffff);
+            }
+
             // this.minecraft.font.draw(pPoseStack, s1, (float)(pLeft + 32 + 3), (float)(pTop + 9 + 3), 0x808080);
             // this.minecraft.font.draw(pPoseStack, component, (float)(pLeft + 32 + 3), (float)(pTop + 9 + 9 + 3), 0x808080);
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -303,7 +309,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
         }
 
         public void deleteWorld() {
-            this.minecraft.setScreen(new ConfirmScreen((p_170322_) -> {
+            this.minecraft.setScreen(new ConfirmScreen(p_170322_ -> {
                 if (p_170322_) {
                     this.minecraft.setScreen(new ProgressScreen(true));
                     this.doDeleteWorld();
@@ -352,7 +358,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
 
             try {
                 LevelStorageSource.LevelStorageAccess levelstoragesource$levelstorageaccess = this.minecraft.getLevelSource().createAccess(s);
-                this.minecraft.setScreen(new EditWorldScreen((p_101719_) -> {
+                this.minecraft.setScreen(new EditWorldScreen(p_101719_ -> {
                     try {
                         levelstoragesource$levelstorageaccess.close();
                     } catch (IOException ioexception1) {
@@ -390,7 +396,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
                         WorldGenSettings worldgensettings = worldstem.worldData().worldGenSettings();
                         Path path = CreateWorldScreen.createTempDataPackDirFromExistingWorld(levelstoragesource$levelstorageaccess.getLevelPath(LevelResource.DATAPACK_DIR), this.minecraft);
                         if (worldgensettings.isOldCustomizedWorld()) {
-                            this.minecraft.setScreen(new ConfirmScreen((p_205503_) -> {
+                            this.minecraft.setScreen(new ConfirmScreen(p_205503_ -> {
                                 this.minecraft.setScreen(p_205503_ ? CreateWorldScreen.createFromExisting(this.screen, worldstem, path) : this.screen);
                             }, new TranslatableComponent("selectWorld.recreate.customized.title"), new TranslatableComponent("selectWorld.recreate.customized.text"), CommonComponents.GUI_PROCEED, CommonComponents.GUI_CANCEL));
                         } else {
@@ -496,7 +502,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
             return this.summary0.getLevelName();
         }
         private void renderExperimentalWarning(PoseStack stack, int mouseX, int mouseY, int top, int left, LevelSummary summary) {
-            if (summary.isExperimental()) {
+            if (summary.isExperimental() && PS1WorldSelectScreen.CLIENT.show_experimental_warning.get()) {
                 int leftStart = left +100;
                 RenderSystem.setShaderTexture(0, TwoColumnSelectionList.FORGE_EXPERIMENTAL_WARNING_ICON);
                 GuiComponent.blit(stack, leftStart - 36, top+8, 0.0F, 0.0F, 32, 32, 32, 32);

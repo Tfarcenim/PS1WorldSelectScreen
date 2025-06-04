@@ -4,14 +4,19 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.StringSplitter;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 public class Utils {
@@ -71,4 +76,11 @@ public class Utils {
             }
         }
     }
+
+    public static List<FormattedText> findOptimalLines(Component pComponent, int pMaxWidth) {
+        StringSplitter stringsplitter = Minecraft.getInstance().font.getSplitter();
+        List<FormattedText> list = stringsplitter.splitLines(pComponent, pMaxWidth, Style.EMPTY);
+        return list;
+    }
+
 }

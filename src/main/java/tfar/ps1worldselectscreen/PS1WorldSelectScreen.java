@@ -40,11 +40,13 @@ public class PS1WorldSelectScreen {
 
         public final ForgeConfigSpec.BooleanValue regular_world_menu;
         public final ForgeConfigSpec.BooleanValue refresh_preview_image;
+        public final ForgeConfigSpec.BooleanValue show_experimental_warning;
 
         Client(ForgeConfigSpec.Builder builder) {
             builder.push("general");
             regular_world_menu = builder.define("regular_world_menu",false);
             refresh_preview_image = builder.define("refresh_preview_image",true);
+            show_experimental_warning = builder.define("show_experimental_warning",false);
 
             builder.pop();
         }
