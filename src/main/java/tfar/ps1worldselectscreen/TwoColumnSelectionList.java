@@ -244,7 +244,8 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
 
 
 
-            List<FormattedText> formattedText = Utils.findOptimalLines(c, 100);
+            int w = width/2 - 90;
+            List<FormattedText> formattedText = Utils.findOptimalLines(c, w);
 
             for (int i = 0; i < formattedText.size(); i++) {
                 FormattedText text = formattedText.get(i);
