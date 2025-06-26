@@ -64,11 +64,18 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
     protected void init() {
         super.init();
         this.icon = this.loadIcon();
-        this.selectButton = this.addRenderableWidget(new Button(this.width / 2 - 154, this.height - 52, 150, 20, new TranslatableComponent("selectWorld.select"), (p_101378_) -> {
+
+        int xCenter = width/2;
+
+        int buttonWidth = 120;
+
+        int spacing = 32;
+
+        this.selectButton = this.addRenderableWidget(new Button(xCenter - buttonWidth - spacing/2, this.height - 52, buttonWidth, 20, new TranslatableComponent("selectWorld.select"), (p_101378_) -> {
             joinWorld();
         }));
 
-        this.restartButton = this.addRenderableWidget(new Button(this.width / 2 + 14, this.height - 52, 150, 20, new TranslatableComponent("selectWorld.restart"), (p_101378_) -> {
+        this.restartButton = this.addRenderableWidget(new Button(xCenter+ spacing/2, this.height - 52, buttonWidth, 20, new TranslatableComponent("selectWorld.restart"), (p_101378_) -> {
 
             try (LevelStorageSource.LevelStorageAccess access = this.minecraft.getLevelSource().createAccess(summary.getLevelId())) {
                 minecraft.setScreen(new ConfirmScreen( (confirmed) -> {
