@@ -1,27 +1,21 @@
 package tfar.ps1worldselectscreen;
 
-import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.worldselection.EditWorldScreen;
-import net.minecraft.client.gui.screens.worldselection.OptimizeWorldScreen;
-import net.minecraft.client.gui.screens.worldselection.WorldSelectionList;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import org.apache.commons.io.FileUtils;
@@ -36,34 +30,28 @@ import java.nio.file.Path;
 public class SubWorldScreen extends Screen implements AutoCloseable {
     private final CustomSelectWorldScreen previous;
     private final LevelSummary summary;
-    private final ResourceLocation iconLocation;
+    private final ResourceLocation previewLocation;
 
     private Button selectButton;
     private Button restartButton;
 
     @Nullable
-    private File iconFile;
+    private File previewFile;
     @Nullable
-    private DynamicTexture icon;
-    protected SubWorldScreen(Component pTitle, CustomSelectWorldScreen previous, LevelSummary summary) {
+    private DynamicTexture preview;
+    protected SubWorldScreen(Component pTitle, CustomSelectWorldScreen previous, LevelSummary summary, ResourceLocation previewLocation,
+                             @Nullable File previewFile) {
         super(pTitle);
         this.previous = previous;
         this.summary = summary;
-        String s = summary.getLevelId();
-        this.iconLocation = new ResourceLocation("minecraft", "worlds/" + Util.sanitizeName(s, ResourceLocation::validPathChar) + "/" +
-                Hashing.sha1().hashUnencodedChars(s) + "/preview");
-        String s1 = summary.getIcon().getPath();
-        this.iconFile = new File(s1.replace("icon","preview"));
-        if (!this.iconFile.isFile()) {
-            this.iconFile = null;
-        }
-
+        this.previewLocation = previewLocation;
+        this.previewFile = previewFile;
     }
 
     @Override
     protected void init() {
         super.init();
-        this.icon = this.loadIcon();
+        this.preview = this.loadIcon();
 
         int xCenter = width/2;
 
@@ -156,10 +144,10 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        ResourceLocation texture =  this.icon != null ? this.iconLocation : TwoColumnSelectionList.ICON_MISSING;
+        ResourceLocation texture =  this.preview != null ? this.previewLocation : TwoColumnSelectionList.ICON_MISSING;
 
-        int iconx = icon != null ? icon.getPixels().getWidth() : 128;
-        int icony = icon != null ? icon.getPixels().getHeight() : 128;
+        int iconx = preview != null ? preview.getPixels().getWidth() : 128;
+        int icony = preview != null ? preview.getPixels().getHeight() : 128;
 
         RenderSystem.setShaderTexture(0,texture);
         RenderSystem.enableBlend();
@@ -170,10 +158,10 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
 
     @Nullable
     private DynamicTexture loadIcon() {
-        boolean flag = this.iconFile != null && this.iconFile.isFile();
+        boolean flag = this.previewFile != null && this.previewFile.isFile();
         if (flag) {
             try {
-                InputStream inputstream = new FileInputStream(this.iconFile);
+                InputStream inputstream = new FileInputStream(this.previewFile);
 
                 DynamicTexture dynamictexture1;
                 try {
@@ -181,7 +169,7 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
                     //Validate.validState(nativeimage.getWidth() == 64, "Must be 64 pixels wide");
                     //Validate.validState(nativeimage.getHeight() == 64, "Must be 64 pixels high");
                     DynamicTexture dynamictexture = new DynamicTexture(nativeimage);
-                    this.minecraft.getTextureManager().register(this.iconLocation, dynamictexture);
+                    this.minecraft.getTextureManager().register(this.previewLocation, dynamictexture);
                     dynamictexture1 = dynamictexture;
                 } catch (Throwable throwable1) {
                     try {
@@ -197,11 +185,11 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
                 return dynamictexture1;
             } catch (Throwable throwable2) {
                 TwoColumnSelectionList.LOGGER.error("Invalid icon for world {}", this.summary.getLevelId(), throwable2);
-                this.iconFile = null;
+                this.previewFile = null;
                 return null;
             }
         } else {
-            this.minecraft.getTextureManager().release(this.iconLocation);
+            this.minecraft.getTextureManager().release(this.previewLocation);
             return null;
         }
     }
@@ -289,8 +277,8 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
 
     @Override
     public void close() {
-        if (this.icon != null) {
-            this.icon.close();
+        if (this.preview != null) {
+            this.preview.close();
         }
     }
 

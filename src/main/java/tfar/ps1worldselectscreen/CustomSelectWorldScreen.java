@@ -117,6 +117,5 @@ public class CustomSelectWorldScreen extends Screen {
         if (this.list != null) {
             this.list.children().forEach(TwoColumnSelectionList.WorldListEntry::close);
         }
-
     }
 }

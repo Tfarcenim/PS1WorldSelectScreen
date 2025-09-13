@@ -134,7 +134,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
 
     protected void moveSelection(AbstractSelectionList.SelectionDirection pOrdering) {
         this.moveSelection(pOrdering, p_101681_ -> {
-            return !p_101681_.summary0.isDisabled();
+            return !p_101681_.summaryLeft.isDisabled();
         });
     }
 
@@ -159,58 +159,58 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
         private final CustomSelectWorldScreen screen;
 
         /////////
-        final LevelSummary summary0;
+        final LevelSummary summaryLeft;
 
-        private final ResourceLocation iconLocation0;
+        private final ResourceLocation previewLocationLeft;
         @Nullable
-        private File iconFile0;
+        private File previewFileLeft;
         @Nullable
-        private final DynamicTexture icon0;
+        private final DynamicTexture previewLeft;
 
         ////////
-        @Nullable final LevelSummary summary1;
+        @Nullable final LevelSummary summaryRight;
 
-        private final ResourceLocation iconLocation1;
+        private final ResourceLocation previewLocationRight;
         @Nullable
-        private File iconFile1;
+        private File previewFileRight;
         @Nullable
-        private final DynamicTexture icon1;
+        private final DynamicTexture previewRight;
 
         private long lastClickTime;
 
-        public WorldListEntry(TwoColumnSelectionList pTwoColumnSelectionList, LevelSummary pSummary,@Nullable LevelSummary summary1) {
+        public WorldListEntry(TwoColumnSelectionList pTwoColumnSelectionList, LevelSummary summaryLeft,@Nullable LevelSummary summaryRight) {
             this.screen = pTwoColumnSelectionList.getScreen();
-            this.summary0 = pSummary;
+            this.summaryLeft = summaryLeft;
             this.minecraft = Minecraft.getInstance();
-            String levelid0 = pSummary.getLevelId();
-            this.iconLocation0 = new ResourceLocation("minecraft", "worlds/" + Util.sanitizeName(levelid0, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(levelid0) + "/icon");
-            this.iconFile0 = Utils.getPreviewFile(pSummary);
-            if (!this.iconFile0.isFile()) {
-                this.iconFile0 = null;
+            String levelid0 = summaryLeft.getLevelId();
+            this.previewLocationLeft = new ResourceLocation("worlds/" + Util.sanitizeName(levelid0, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(levelid0) + "/icon");
+            this.previewFileLeft = Utils.getPreviewFile(summaryLeft);
+            if (!this.previewFileLeft.isFile()) {
+                this.previewFileLeft = null;
             }
-            this.icon0 = this.loadServerIcon(true);
+            this.previewLeft = this.loadServerIcon(true);
 
-            this.summary1 = summary1;
-            if (summary1 != null) {
-                String levelid1 = summary1.getLevelId();
-                this.iconLocation1 = new ResourceLocation("minecraft", "worlds/" + Util.sanitizeName(levelid1, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(levelid0) + "/icon");
-                this.iconFile1 = Utils.getPreviewFile(summary1);
-                if (!this.iconFile1.isFile()) {
-                    this.iconFile1 = null;
+            this.summaryRight = summaryRight;
+            if (summaryRight != null) {
+                String levelid1 = summaryRight.getLevelId();
+                this.previewLocationRight = new ResourceLocation( "worlds/" + Util.sanitizeName(levelid1, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(levelid1) + "/icon");
+                this.previewFileRight = Utils.getPreviewFile(summaryRight);
+                if (!this.previewFileRight.isFile()) {
+                    this.previewFileRight = null;
                 }
-                this.icon1 = this.loadServerIcon(false);
+                this.previewRight = this.loadServerIcon(false);
             } else {
-                iconLocation1 = null;
-                icon1 = null;
-                iconFile1 = null;
+                previewLocationRight = null;
+                previewRight = null;
+                previewFileRight = null;
             }
 
         }
 
         public Component getNarration() {
-            TranslatableComponent translatablecomponent = new TranslatableComponent("narrator.select.world", this.summary0.getLevelName(), new Date(this.summary0.getLastPlayed()), this.summary0.isHardcore() ? new TranslatableComponent("gameMode.hardcore") : new TranslatableComponent("gameMode." + this.summary0.getGameMode().getName()), this.summary0.hasCheats() ? new TranslatableComponent("selectWorld.cheats") : TextComponent.EMPTY, this.summary0.getWorldVersionName());
+            TranslatableComponent translatablecomponent = new TranslatableComponent("narrator.select.world", this.summaryLeft.getLevelName(), new Date(this.summaryLeft.getLastPlayed()), this.summaryLeft.isHardcore() ? new TranslatableComponent("gameMode.hardcore") : new TranslatableComponent("gameMode." + this.summaryLeft.getGameMode().getName()), this.summaryLeft.hasCheats() ? new TranslatableComponent("selectWorld.cheats") : TextComponent.EMPTY, this.summaryLeft.getWorldVersionName());
             Component component;
-            if (this.summary0.isLocked()) {
+            if (this.summaryLeft.isLocked()) {
                 component = CommonComponents.joinForNarration(translatablecomponent, TwoColumnSelectionList.WORLD_LOCKED_TOOLTIP);
             } else {
                 component = translatablecomponent;
@@ -226,11 +226,11 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
 
         public void renderPanel(PoseStack pPoseStack, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pIsMouseOver, float pPartialTick
         ,boolean left) {
-            LevelSummary summary = left ? summary0 : summary1;
+            LevelSummary summary = left ? summaryLeft : summaryRight;
             if (summary == null) return;
 
-            DynamicTexture icon = left ? icon0 : icon1;
-            ResourceLocation iconLocation = left ? iconLocation0 : iconLocation1;
+            DynamicTexture icon = left ? previewLeft : previewRight;
+            ResourceLocation iconLocation = left ? previewLocationLeft : previewLocationRight;
             String s = summary.getLevelName();
             // String s1 = this.summary0.getLevelId() + " (" + TwoColumnSelectionList.DATE_FORMAT.format(new Date(this.summary0.getLastPlayed())) + ")";
             if (StringUtils.isEmpty(s)) {
@@ -300,13 +300,14 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
 
         public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
             boolean left = pMouseX < width / 2d;
-            LevelSummary summary = left ? summary0 : summary1;
-            if (summary == null || summary.isDisabled()) {
-                return true;
-            } else {
-                minecraft.setScreen(new SubWorldScreen(new TextComponent(summary.getLevelName()), this.screen, summary));
-                return true;
+            LevelSummary summary = left ? summaryLeft : summaryRight;
+            if (summary == null) return false;
+            ResourceLocation previewLocation = left ? previewLocationLeft : previewLocationRight;
+            File previewFile = left ? previewFileLeft : previewFileRight;
+            if (!summary.isDisabled()) {
+                minecraft.setScreen(new SubWorldScreen(new TextComponent(summary.getLevelName()), this.screen, summary,previewLocation,previewFile));
             }
+            return true;
         }
 
         public void deleteWorld() {
@@ -317,12 +318,12 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
                 }
 
                 this.minecraft.setScreen(this.screen);
-            }, new TranslatableComponent("selectWorld.deleteQuestion"), new TranslatableComponent("selectWorld.deleteWarning", this.summary0.getLevelName()), new TranslatableComponent("selectWorld.deleteButton"), CommonComponents.GUI_CANCEL));
+            }, new TranslatableComponent("selectWorld.deleteQuestion"), new TranslatableComponent("selectWorld.deleteWarning", this.summaryLeft.getLevelName()), new TranslatableComponent("selectWorld.deleteButton"), CommonComponents.GUI_CANCEL));
         }
 
         public void doDeleteWorld() {
             LevelStorageSource levelstoragesource = this.minecraft.getLevelSource();
-            String s = this.summary0.getLevelId();
+            String s = this.summaryLeft.getLevelId();
 
             try {
                 LevelStorageSource.LevelStorageAccess levelstoragesource$levelstorageaccess = levelstoragesource.createAccess(s);
@@ -355,7 +356,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
         }
 
         public void editWorld() {
-            String s = this.summary0.getLevelId();
+            String s = this.summaryLeft.getLevelId();
 
             try {
                 LevelStorageSource.LevelStorageAccess levelstoragesource$levelstorageaccess = this.minecraft.getLevelSource().createAccess(s);
@@ -388,7 +389,7 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
             this.queueLoadScreen();
 
             try {
-                LevelStorageSource.LevelStorageAccess levelstoragesource$levelstorageaccess = this.minecraft.getLevelSource().createAccess(this.summary0.getLevelId());
+                LevelStorageSource.LevelStorageAccess levelstoragesource$levelstorageaccess = this.minecraft.getLevelSource().createAccess(this.summaryLeft.getLevelId());
 
                 try {
                     WorldStem worldstem = this.minecraft.makeWorldStem(levelstoragesource$levelstorageaccess, false);
@@ -435,9 +436,8 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
                 }
             } catch (Exception exception) {
                 TwoColumnSelectionList.LOGGER.error("Unable to recreate world", exception);
-                this.minecraft.setScreen(new AlertScreen(() -> {
-                    this.minecraft.setScreen(this.screen);
-                }, new TranslatableComponent("selectWorld.recreate.error.title"), new TranslatableComponent("selectWorld.recreate.error.text")));
+                this.minecraft.setScreen(new AlertScreen(() ->
+                        this.minecraft.setScreen(this.screen), new TranslatableComponent("selectWorld.recreate.error.title"), new TranslatableComponent("selectWorld.recreate.error.text")));
             }
 
         }
@@ -448,21 +448,21 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
 
         @Nullable
         private DynamicTexture loadServerIcon(boolean left) {
-            File iconFile = left ? iconFile0 : iconFile1;
-            ResourceLocation iconLocation = left ? iconLocation0 : iconLocation1;
+            File iconFile = left ? previewFileLeft : previewFileRight;
+            ResourceLocation iconLocation = left ? previewLocationLeft : previewLocationRight;
             boolean flag = iconFile != null && iconFile.isFile();
             if (flag) {
                 try {
                     InputStream inputstream = new FileInputStream(iconFile);
 
-                    DynamicTexture dynamictexture1;
+                    DynamicTexture dynamicTexture;
                     try {
                         NativeImage nativeimage = NativeImage.read(inputstream);
                      //   Validate.validState(nativeimage.getWidth() == 64, "Must be 64 pixels wide");
                      //   Validate.validState(nativeimage.getHeight() == 64, "Must be 64 pixels high");
                         DynamicTexture dynamictexture = new DynamicTexture(nativeimage);
                         this.minecraft.getTextureManager().register(iconLocation, dynamictexture);
-                        dynamictexture1 = dynamictexture;
+                        dynamicTexture = dynamictexture;
                     } catch (Throwable throwable1) {
                         try {
                             inputstream.close();
@@ -474,41 +474,38 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
                     }
 
                     inputstream.close();
-                    return dynamictexture1;
+                    return dynamicTexture;
                 } catch (Throwable throwable2) {
-                    TwoColumnSelectionList.LOGGER.error("Invalid icon for world {}",left?  this.summary0.getLevelId() :  this.summary1.getLevelId(), throwable2);
+                    TwoColumnSelectionList.LOGGER.error("Invalid icon for world {}",left?  this.summaryLeft.getLevelId() : this.summaryRight.getLevelId(), throwable2);
                     if (left) {
-                        iconFile0 = null;
+                        previewFileLeft = null;
                     } else {
-                        iconFile1 = null;
+                        previewFileRight = null;
                     }
                     return null;
                 }
             } else {
-                this.minecraft.getTextureManager().release(this.iconLocation0);
+                this.minecraft.getTextureManager().release(iconLocation);
                 return null;
             }
         }
 
         public void close() {
-            if (this.icon0 != null) {
-                this.icon0.close();
+            if (this.previewLeft != null) {
+                this.previewLeft.close();
             }
-            if (this.icon1 != null) {
-                this.icon1.close();
+            if (this.previewRight != null) {
+                this.previewRight.close();
             }
         }
 
-        public String getLevelName() {
-            return this.summary0.getLevelName();
-        }
         private void renderExperimentalWarning(PoseStack stack, int mouseX, int mouseY, int top, int left, LevelSummary summary) {
             if (summary.isExperimental() && PS1WorldSelectScreen.CLIENT.show_experimental_warning.get()) {
                 int leftStart = left +100;
                 RenderSystem.setShaderTexture(0, TwoColumnSelectionList.FORGE_EXPERIMENTAL_WARNING_ICON);
                 GuiComponent.blit(stack, leftStart - 36, top+8, 0.0F, 0.0F, 32, 32, 32, 32);
                 //Reset texture to what it was before
-                RenderSystem.setShaderTexture(0, this.icon0 != null ? this.iconLocation0 : TwoColumnSelectionList.ICON_MISSING);
+                RenderSystem.setShaderTexture(0, this.previewLeft != null ? this.previewLocationLeft : TwoColumnSelectionList.ICON_MISSING);
                 if (TwoColumnSelectionList.this.getEntryAtPosition(mouseX, mouseY) == this && mouseX > leftStart - 36 && mouseX < leftStart) {
                     List<net.minecraft.util.FormattedCharSequence> tooltip = Minecraft.getInstance().font.split(new TranslatableComponent("forge.experimentalsettings.tooltip"), 200);
                     TwoColumnSelectionList.this.screen.renderTooltip(stack, tooltip, mouseX, mouseY);
