@@ -30,7 +30,7 @@ public class CustomSelectWorldScreen extends Screen {
     public CustomSelectWorldScreen(Screen pLastScreen) {
         super(new TranslatableComponent("selectWorld.title"));
         this.lastScreen = pLastScreen;
-        shouldHideBars = !PS1WorldSelectScreen.CLIENT.regular_world_menu.get();
+        shouldHideBars = !ClientConfig.CLIENT.regular_world_menu.get();
     }
 
     public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
@@ -94,7 +94,7 @@ public class CustomSelectWorldScreen extends Screen {
         if (!shouldHideBars) {
             this.searchBox.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         }
-        drawCenteredString(pPoseStack, this.font, this.title, this.width / 2, 8, 16777215);
+        drawCenteredString(pPoseStack, this.font, this.title, this.width / 2, 8, 0xffffff);
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         if (this.toolTip != null) {
             this.renderTooltip(pPoseStack, this.toolTip, pMouseX, pMouseY);

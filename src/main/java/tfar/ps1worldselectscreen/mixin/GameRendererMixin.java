@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import tfar.ps1worldselectscreen.ClientConfig;
 import tfar.ps1worldselectscreen.PS1WorldSelectScreen;
 import tfar.ps1worldselectscreen.Utils;
 
@@ -30,7 +31,7 @@ public abstract class GameRendererMixin {
 			)
 	)
 	private boolean on_tryTakeScreenshotIfNeeded_hasWorldScreenshot(GameRenderer instance) {
-		return this.hasScreenshot && PS1WorldSelectScreen.CLIENT.refresh_preview_image.get() || this.hasWorldScreenshot;
+		return this.hasScreenshot && ClientConfig.CLIENT.refresh_preview_image.get() || this.hasWorldScreenshot;
 	}
 
 

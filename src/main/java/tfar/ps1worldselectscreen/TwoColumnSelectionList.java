@@ -304,8 +304,9 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
             if (summary == null) return false;
             ResourceLocation previewLocation = left ? previewLocationLeft : previewLocationRight;
             File previewFile = left ? previewFileLeft : previewFileRight;
+            DynamicTexture texture = left ? previewLeft : previewRight;
             if (!summary.isDisabled()) {
-                minecraft.setScreen(new SubWorldScreen(new TextComponent(summary.getLevelName()), this.screen, summary,previewLocation,previewFile));
+                minecraft.setScreen(new SubWorldScreen(new TextComponent(summary.getLevelName()), this.screen, summary,previewLocation, texture));
             }
             return true;
         }
@@ -491,16 +492,16 @@ public class TwoColumnSelectionList extends ObjectSelectionList<TwoColumnSelecti
         }
 
         public void close() {
-            if (this.previewLeft != null) {
-                this.previewLeft.close();
-            }
-            if (this.previewRight != null) {
-                this.previewRight.close();
-            }
+        //    if (this.previewLeft != null) {
+        //        this.previewLeft.close();
+        //    }
+         //  if (this.previewRight != null) {
+         //      this.previewRight.close();
+         //   }
         }
 
         private void renderExperimentalWarning(PoseStack stack, int mouseX, int mouseY, int top, int left, LevelSummary summary) {
-            if (summary.isExperimental() && PS1WorldSelectScreen.CLIENT.show_experimental_warning.get()) {
+            if (summary.isExperimental() && ClientConfig.CLIENT.show_experimental_warning.get()) {
                 int leftStart = left +100;
                 RenderSystem.setShaderTexture(0, TwoColumnSelectionList.FORGE_EXPERIMENTAL_WARNING_ICON);
                 GuiComponent.blit(stack, leftStart - 36, top+8, 0.0F, 0.0F, 32, 32, 32, 32);

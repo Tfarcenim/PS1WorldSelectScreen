@@ -1,6 +1,5 @@
 package tfar.ps1worldselectscreen;
 
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
@@ -12,19 +11,14 @@ import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.worldselection.EditWorldScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 
 public class SubWorldScreen extends Screen implements AutoCloseable {
@@ -36,22 +30,19 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
     private Button restartButton;
 
     @Nullable
-    private File previewFile;
-    @Nullable
     private DynamicTexture preview;
     protected SubWorldScreen(Component pTitle, CustomSelectWorldScreen previous, LevelSummary summary, ResourceLocation previewLocation,
-                             @Nullable File previewFile) {
+                             @Nullable DynamicTexture texture) {
         super(pTitle);
         this.previous = previous;
         this.summary = summary;
         this.previewLocation = previewLocation;
-        this.previewFile = previewFile;
+        this.preview = texture;
     }
 
     @Override
     protected void init() {
         super.init();
-        this.preview = this.loadIcon();
 
         int xCenter = width/2;
 
@@ -59,14 +50,12 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
 
         int spacing = 32;
 
-        this.selectButton = this.addRenderableWidget(new Button(xCenter - buttonWidth - spacing/2, this.height - 52, buttonWidth, 20, new TranslatableComponent("selectWorld.select"), (p_101378_) -> {
-            joinWorld();
-        }));
+        this.selectButton = this.addRenderableWidget(new Button(xCenter - buttonWidth - spacing/2, this.height - 52, buttonWidth, 20,
+                new TranslatableComponent("selectWorld.select"), b -> joinWorld()));
 
-        this.restartButton = this.addRenderableWidget(new Button(xCenter+ spacing/2, this.height - 52, buttonWidth, 20, new TranslatableComponent("selectWorld.restart"), (p_101378_) -> {
-
+        this.restartButton = this.addRenderableWidget(new Button(xCenter+ spacing/2, this.height - 52, buttonWidth, 20, new TranslatableComponent("selectWorld.restart"), p_101378_ -> {
             try (LevelStorageSource.LevelStorageAccess access = this.minecraft.getLevelSource().createAccess(summary.getLevelId())) {
-                minecraft.setScreen(new ConfirmScreen( (confirmed) -> {
+                minecraft.setScreen(new ConfirmScreen(confirmed -> {
                             if (confirmed) {
                                 doDeleteWorld();
                                 loadBackupAndShowToast();
@@ -151,47 +140,10 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
 
         RenderSystem.setShaderTexture(0,texture);
         RenderSystem.enableBlend();
-        GuiComponent.blit(pPoseStack, width/2-iconx/4, height/2-icony/4-24, 0.0F, 0.0F, iconx/2, icony/2, iconx/2, icony/2);
+        GuiComponent.blit(pPoseStack, width/2-iconx/4, height/2-icony/4-24,
+                0, 0, iconx/2, icony/2, iconx/2, icony/2);
         RenderSystem.disableBlend();
 
-    }
-
-    @Nullable
-    private DynamicTexture loadIcon() {
-        boolean flag = this.previewFile != null && this.previewFile.isFile();
-        if (flag) {
-            try {
-                InputStream inputstream = new FileInputStream(this.previewFile);
-
-                DynamicTexture dynamictexture1;
-                try {
-                    NativeImage nativeimage = NativeImage.read(inputstream);
-                    //Validate.validState(nativeimage.getWidth() == 64, "Must be 64 pixels wide");
-                    //Validate.validState(nativeimage.getHeight() == 64, "Must be 64 pixels high");
-                    DynamicTexture dynamictexture = new DynamicTexture(nativeimage);
-                    this.minecraft.getTextureManager().register(this.previewLocation, dynamictexture);
-                    dynamictexture1 = dynamictexture;
-                } catch (Throwable throwable1) {
-                    try {
-                        inputstream.close();
-                    } catch (Throwable throwable) {
-                        throwable1.addSuppressed(throwable);
-                    }
-
-                    throw throwable1;
-                }
-
-                inputstream.close();
-                return dynamictexture1;
-            } catch (Throwable throwable2) {
-                TwoColumnSelectionList.LOGGER.error("Invalid icon for world {}", this.summary.getLevelId(), throwable2);
-                this.previewFile = null;
-                return null;
-            }
-        } else {
-            this.minecraft.getTextureManager().release(this.previewLocation);
-            return null;
-        }
     }
 
     public void joinWorld() {
@@ -239,7 +191,7 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
                     this.loadWorld();
                 }, mutablecomponent, component, false));
             } else if (this.summary.askToOpenWorld()) {
-                this.minecraft.setScreen(new ConfirmScreen((p_101741_) -> {
+                this.minecraft.setScreen(new ConfirmScreen(p_101741_ -> {
                     if (p_101741_) {
                         try {
                             this.loadWorld();
@@ -247,13 +199,16 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
                             TwoColumnSelectionList.LOGGER.error("Failure to open 'future world'", exception);
                             this.minecraft.setScreen(new AlertScreen(() -> {
                                 this.minecraft.setScreen(this);
-                            }, new TranslatableComponent("selectWorld.futureworld.error.title"), new TranslatableComponent("selectWorld.futureworld.error.text")));
+                            }, new TranslatableComponent("selectWorld.futureworld.error.title"),
+                                    new TranslatableComponent("selectWorld.futureworld.error.text")));
                         }
                     } else {
                         this.minecraft.setScreen(this);
                     }
 
-                }, new TranslatableComponent("selectWorld.versionQuestion"), new TranslatableComponent("selectWorld.versionWarning", this.summary.getWorldVersionName()), new TranslatableComponent("selectWorld.versionJoinButton"), CommonComponents.GUI_CANCEL));
+                }, new TranslatableComponent("selectWorld.versionQuestion"),
+                        new TranslatableComponent("selectWorld.versionWarning", this.summary.getWorldVersionName()),
+                        new TranslatableComponent("selectWorld.versionJoinButton"), CommonComponents.GUI_CANCEL));
             } else {
                 this.loadWorld();
             }
@@ -262,12 +217,10 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
     }
 
     private void loadWorld() {
-        this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         if (this.minecraft.getLevelSource().levelExists(this.summary.getLevelId())) {
             this.queueLoadScreen();
             this.minecraft.loadLevel(this.summary.getLevelId());
         }
-
     }
 
     private void queueLoadScreen() {
