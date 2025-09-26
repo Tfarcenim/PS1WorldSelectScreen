@@ -51,20 +51,36 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
         int spacing = 32;
 
         this.selectButton = this.addRenderableWidget(new Button(xCenter - buttonWidth - spacing/2, this.height - 52, buttonWidth, 20,
-                new TranslatableComponent("selectWorld.select"), b -> joinWorld()));
+                new TranslatableComponent("selectWorld.select"), b -> {
+            createBackup();
+            joinWorld();
+    }));
 
         this.restartButton = this.addRenderableWidget(new Button(xCenter+ spacing/2, this.height - 52, buttonWidth, 20, new TranslatableComponent("selectWorld.restart"), p_101378_ -> {
             try (LevelStorageSource.LevelStorageAccess access = this.minecraft.getLevelSource().createAccess(summary.getLevelId())) {
-                minecraft.setScreen(new ConfirmScreen(confirmed -> {
-                            if (confirmed) {
-                                doDeleteWorld();
-                                loadBackupAndShowToast();
-                                joinWorld();
-                            } else {
-                                minecraft.setScreen(this);
-                            }
-                        }, new TranslatableComponent("restartWorld.confirm.title"), new TranslatableComponent("restartWorld.confirm.description"))
-                );
+
+                String levelId = summary.getLevelId();
+
+                Path restartDir = minecraft.gameDirectory.toPath().resolve(PS1WorldSelectScreen.FOLDER);
+                Path restartPath = restartDir.resolve(levelId);
+
+                boolean doesRestartExist = restartPath.toFile().exists();
+                if (doesRestartExist) {
+
+                    minecraft.setScreen(new ConfirmScreen(confirmed -> {
+                                if (confirmed) {
+                                    doDeleteWorld();
+                                    loadBackupAndShowToast();
+                                    joinWorld();
+                                } else {
+                                    minecraft.setScreen(this);
+                                }
+                            }, new TranslatableComponent("restartWorld.confirm.title"), new TranslatableComponent("restartWorld.confirm.description"))
+                    );
+                } else {
+                    minecraft.setScreen(new AlertScreen(() -> this.minecraft.setScreen(this), new TranslatableComponent("restartWorld.missing"),
+                            new TranslatableComponent("restartWorld.missing.back")));
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -88,6 +104,24 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
         }
     }
 
+    public void createBackup(){
+        LevelStorageSource levelstoragesource = this.minecraft.getLevelSource();
+        Path saveDir = levelstoragesource.getBaseDir();
+        String levelId = summary.getLevelId();
+        Path levelPath = saveDir.resolve(levelId);
+
+        Path restartDir = minecraft.gameDirectory.toPath().resolve(PS1WorldSelectScreen.FOLDER);
+        Path restartPath = restartDir.resolve(levelId);
+
+        try {
+            if (!restartPath.toFile().exists()) {
+                FileUtils.copyDirectory(levelPath.toFile(), restartPath.toFile());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public void doDeleteWorld() {
         LevelStorageSource levelstoragesource = this.minecraft.getLevelSource();
@@ -99,20 +133,16 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
             try {
                 storageAccess.deleteLevel();
             } catch (Throwable throwable1) {
-                if (storageAccess != null) {
-                    try {
-                        storageAccess.close();
-                    } catch (Throwable throwable) {
-                        throwable1.addSuppressed(throwable);
-                    }
+                try {
+                    storageAccess.close();
+                } catch (Throwable throwable) {
+                    throwable1.addSuppressed(throwable);
                 }
 
                 throw throwable1;
             }
 
-            if (storageAccess != null) {
-                storageAccess.close();
-            }
+            storageAccess.close();
         } catch (IOException ioexception) {
             SystemToast.onWorldDeleteFailure(this.minecraft, s);
             TwoColumnSelectionList.LOGGER.error("Failed to delete world {}", s, ioexception);
@@ -168,20 +198,16 @@ public class SubWorldScreen extends Screen implements AutoCloseable {
                             try {
                                 EditWorldScreen.makeBackupAndShowToast(levelStorageAccess);
                             } catch (Throwable throwable1) {
-                                if (levelStorageAccess != null) {
-                                    try {
-                                        levelStorageAccess.close();
-                                    } catch (Throwable throwable) {
-                                        throwable1.addSuppressed(throwable);
-                                    }
+                                try {
+                                    levelStorageAccess.close();
+                                } catch (Throwable throwable) {
+                                    throwable1.addSuppressed(throwable);
                                 }
 
                                 throw throwable1;
                             }
 
-                            if (levelStorageAccess != null) {
-                                levelStorageAccess.close();
-                            }
+                            levelStorageAccess.close();
                         } catch (IOException ioexception) {
                             SystemToast.onWorldAccessFailure(this.minecraft, s2);
                             TwoColumnSelectionList.LOGGER.error("Failed to backup level {}", s2, ioexception);

@@ -1,5 +1,7 @@
 {
   "restartWorld.confirm.description": "This will restore the world from a backup and delete all current progress",
   "restartWorld.confirm.title": "Confirm Restart",
+  "restartWorld.missing": "There are no backup worlds!",
+  "restartWorld.missing.back": "Go back to previous screen",
   "selectWorld.restart": "Restart"
 }

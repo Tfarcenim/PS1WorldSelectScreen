@@ -48,6 +48,8 @@ public class PS1WorldSelectScreen {
             add("restartWorld.confirm.title","Confirm Restart");
             add("restartWorld.confirm.description","This will restore the world from a backup and delete all current progress");
             add("selectWorld.restart","Restart");
+            add("restartWorld.missing","There are no backup worlds!");
+            add("restartWorld.missing.back","Go back to previous screen");
         }
     }
 }
